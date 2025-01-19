@@ -1,0 +1,10 @@
+langchain==0.3.14
+langchain-community==0.3.14
+openai
+python-dotenv
+tiktoken
+model2vec
+faiss-cpu
+langgraph
+duckduckgo-search
+langchain_openai
