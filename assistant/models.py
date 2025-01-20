@@ -1,22 +1,20 @@
-from typing_extensions import TypedDict
+from typing import Optional
 from pydantic import BaseModel, Field
 
-
 class ContextDocument(BaseModel):
-    content: str 
-    link: str
-    title: str
-    source: str
+    content: str = Field(description="Text of document.")
+    link: str = Field(description="Link to document.")
+    title: str = Field(description="Title of the document")
+    source: str = Field(description="Whether the document is from RAG or Web.")
 
 
-class GraphState(TypedDict):
-    context_documents: list[ContextDocument]
-    response: str
-    chat_history: list[str]
-    query: str
-    sources: list[str]
-    document_store_needed: bool
-    intro_message: str
+class GraphState(BaseModel):
+    context_documents: Optional[list[ContextDocument]] = Field([], description="Context Documents from either RAG or the Web.")
+    response: Optional[str] = Field("", description="Chtbot Response to the query.")
+    chat_history: Optional[list[str]] = Field([], description="History of the chat from the user.")
+    query: str = Field(description="Message to respond to.")
+    document_store_needed: Optional[bool | None] = Field(None, description="Whether to run RAG or not.")
+    intro_message: Optional[str] = Field("", description="Message to indicate where answer is sourced from.")
 
 
 class DetermineDocumentStore(BaseModel):

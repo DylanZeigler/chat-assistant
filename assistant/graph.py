@@ -28,8 +28,8 @@ COMPILED_GRAPH = GRAPH.compile()
 
 COMPILED_GRAPH.get_graph().draw_mermaid_png(output_file_path="./assistant/graph.png")
 
-def run_graph(query):
-    input_state = {"query": query}
+def run_graph(query: str, chat_history: list[str] = []) -> dict[str, str]:
+    input_state = {"query": query, "chat_history": chat_history}
     response = COMPILED_GRAPH.invoke(input_state)
 
     return response

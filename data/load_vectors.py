@@ -6,21 +6,15 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
 
 from config import config
 
 logger = logging.getLogger(__name__)
 
-def fetch_file_urls(repo_owner, repo_name, directory_path):
-    """
-    Fetch all files in a specific directory of a GitHub repository.
+def fetch_file_urls() -> list[str]:
 
-    :param repo_owner: Owner of the repository (e.g., 'octocat').
-    :param repo_name: Name of the repository (e.g., 'Hello-World').
-    :param directory_path: Path to the target directory within the repository.
-    :return: List of file paths within the specified directory.
-    """
-    base_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{directory_path}"
+    base_url = f"https://api.github.com/repos/{config.REPO_OWNER}/{config.REPO_NAME}/contents/{config.DIRECTORY_PATH}"
     headers = {}
 
     response = requests.get(base_url, headers=headers)
@@ -37,7 +31,7 @@ def fetch_file_urls(repo_owner, repo_name, directory_path):
         raise Exception(f"Failed to fetch files: {response.status_code} - {response.text}")
 
 
-def load_documents(file_urls):
+def load_documents(file_urls: list[str]) -> list[Document]:
 
     loader = WebBaseLoader(file_urls)
     documents = loader.load()
@@ -45,7 +39,7 @@ def load_documents(file_urls):
     return documents
 
 
-def split_documents(documents):
+def split_documents(documents: list[Document]) -> list[Document]:
 
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     texts = text_splitter.split_documents(documents)
@@ -53,7 +47,7 @@ def split_documents(documents):
     return texts
 
 
-def run_embeddings_and_create_vector_store(texts):
+def run_embeddings_and_create_vector_store(texts: list[Document]):
 
     embeddings = OpenAIEmbeddings(model=config.EMBEDDING_MODEL)
     vector_store = FAISS.from_documents(texts, embeddings)
@@ -69,7 +63,7 @@ def save_vector_store_locally(vector_store):
     vector_store.save_local(config.VECTOR_STORE_PATH)
 
 
-def check_vector_store_exists():
+def check_vector_store_exists() -> bool:
 
     return os.path.isdir(config.VECTOR_STORE_PATH)
 
@@ -82,7 +76,7 @@ def load_data():
     
     logger.info("Data does not exist, loading data now...")
     
-    file_urls = fetch_file_urls(repo_owner=config.REPO_OWNER, repo_name=config.REPO_NAME, directory_path=config.DIRECTORY_PATH)
+    file_urls = fetch_file_urls()
     documents = load_documents(file_urls=file_urls)
     texts = split_documents(documents=documents)
     vector_store = run_embeddings_and_create_vector_store(texts=texts)

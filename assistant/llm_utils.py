@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from config import config
 
 from langchain_community.vectorstores import FAISS
@@ -14,23 +15,27 @@ VECTOR_STORE = FAISS.load_local(
 )
 
 
-def determine_document_search_chain(query):
+def determine_document_search_chain(query: str, chat_history: list[str]) -> DetermineDocumentStore:
     
     with open("./prompts/determine_document_search.txt", "r") as file:
         template = file.read()
     
-    prompt = PromptTemplate(input_variables=["response_format_model", "query"], template=template)
+    prompt = PromptTemplate(input_variables=["response_format_model", "query", "chat_history"], template=template)
     chain = build_chain(prompt)
 
     parser = PydanticOutputParser(pydantic_object=DetermineDocumentStore)
-    response = chain.invoke({"query": query, "response_format_model": parser.get_format_instructions()}).content
+    response = chain.invoke({
+        "query": query, 
+        "chat_history": chat_history, 
+        "response_format_model": parser.get_format_instructions()
+    }).content
 
     response_dict = json.loads(response)
 
     return DetermineDocumentStore(**response_dict)
 
 
-def rag_documents(query):
+def rag_documents(query: str) -> list[ContextDocument]:
 
     retrieved_docs = VECTOR_STORE.similarity_search(query)
 
@@ -38,7 +43,7 @@ def rag_documents(query):
 
     return documents
 
-def convert_rag_documents(retrieved_docs):
+def convert_rag_documents(retrieved_docs: dict[str, Any]) -> list[ContextDocument]:
 
     documents = []
 
@@ -60,7 +65,7 @@ def convert_rag_documents(retrieved_docs):
 
     return documents
 
-def web_documents(query):
+def web_documents(query: str) -> list[ContextDocument]:
 
     search_tool = DuckDuckGoSearchResults(output_format="json")
 
@@ -71,7 +76,7 @@ def web_documents(query):
 
     return documents
 
-def convert_web_documents(retrieved_docs):
+def convert_web_documents(retrieved_docs: dict[str, Any])-> list[ContextDocument]:
     
     documents = []
 
@@ -94,12 +99,17 @@ def convert_web_documents(retrieved_docs):
     return documents
 
 
-def answer_question_chain(query, document_store_needed, context_documents):
+def answer_question_chain(
+    query: str, 
+    chat_history: list[str], 
+    document_store_needed: bool, 
+    context_documents: list[ContextDocument]
+) -> Answer:
 
     with open("./prompts/answer_question.txt", "r") as file:
         template = file.read()
     
-    prompt = PromptTemplate(input_variables=["response_format_model", "query", "documents_source", "context_documents"], template=template)
+    prompt = PromptTemplate(input_variables=["response_format_model", "query", "chat_history", "documents_source", "context_documents"], template=template)
     chain = build_chain(prompt)
 
     parser = PydanticOutputParser(pydantic_object=Answer)
@@ -107,6 +117,7 @@ def answer_question_chain(query, document_store_needed, context_documents):
     source_field = generate_document_source_field(document_store_needed)
     response = chain.invoke({
         "query": query, 
+        "chat_history": chat_history,
         "documents_source": source_field,
         "context_documents":context_documents, 
         "response_format_model": parser.get_format_instructions()
@@ -117,7 +128,7 @@ def answer_question_chain(query, document_store_needed, context_documents):
     return Answer(**response_dict)
 
 
-def generate_document_source_field(document_store_needed):
+def generate_document_source_field(document_store_needed: bool) -> str:
 
     if document_store_needed:
         return "DuploCloud Document Store"
@@ -125,8 +136,7 @@ def generate_document_source_field(document_store_needed):
         return "Web Search"
 
 
-
-def build_chain(prompt):
+def build_chain(prompt: str):
 
     model_kwargs = {"response_format": {"type": "json_object"}} 
     llm = ChatOpenAI(

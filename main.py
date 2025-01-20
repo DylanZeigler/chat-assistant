@@ -29,11 +29,3 @@ def create_app():
     return app
 
 app = create_app()
-
-
-
-# from assistant.graph import run_graph
-
-# if __name__ == "__main__":
-#     query = input("Ask a question: ")
-#     print(run_graph(query))
