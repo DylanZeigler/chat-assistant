@@ -29,8 +29,8 @@ LangGraph used to create a workflow that will determine the users query context 
 
 ## Future Work
 
-- Using postgres pgvector for better persistent store options
+- Using postgres pgvector for better persistent store options.
 - Using postgres for LangGraph CheckPointers to help save graph state. This could allow for partial workflow executions and human in the loop functionality.
 - Giving more context to what information is available in the document store allowing more accurate decisions between RAG or a web search.
 - Expanding web search to pull more info from the web instead of relying on a snippet of the search pages. 
-- Expanding prompts to include other contextual information such as a user's local time, preferences, etc to better answer the questions.
+- Expanding prompts to include other contextual information such as a user's local time, preferences, etc. to better answer the questions.
