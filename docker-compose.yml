@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  dylan-zeigler-chat-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/app/data  # Mount the 'app' directory to the container's '/app'
+    ports:
+      - "8000:8000"  # Map port 8000 on the host to port 8000 in the container

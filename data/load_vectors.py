@@ -1,20 +1,17 @@
 import os
+import logging
 import requests
-from dotenv import load_dotenv
-load_dotenv(dotenv_path="../")
 
 from langchain_community.document_loaders import WebBaseLoader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 
-REPO_OWNER = "duplocloud" 
-REPO_NAME = "docs"  
-DIRECTORY_PATH = "getting-started-1/application-focussed-interface"  
-VECTOR_STORE_PATH = "./data/stores/faiss_vector_store"
+from config import config
+
+logger = logging.getLogger(__name__)
 
 def fetch_file_urls(repo_owner, repo_name, directory_path):
-
     """
     Fetch all files in a specific directory of a GitHub repository.
 
@@ -50,7 +47,7 @@ def load_documents(file_urls):
 
 def split_documents(documents):
 
-    text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     texts = text_splitter.split_documents(documents)
     
     return texts
@@ -58,7 +55,7 @@ def split_documents(documents):
 
 def run_embeddings_and_create_vector_store(texts):
 
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+    embeddings = OpenAIEmbeddings(model=config.EMBEDDING_MODEL)
     vector_store = FAISS.from_documents(texts, embeddings)
 
     return vector_store
@@ -66,21 +63,26 @@ def run_embeddings_and_create_vector_store(texts):
 
 def save_vector_store_locally(vector_store):
 
-    vector_store.save_local(VECTOR_STORE_PATH)
+    if not os.path.exists(config.VECTOR_STORE_DIR):
+        os.makedirs(config.VECTOR_STORE_DIR)
+
+    vector_store.save_local(config.VECTOR_STORE_PATH)
 
 
 def check_vector_store_exists():
 
-    return os.path.isdir(VECTOR_STORE_PATH)
+    return os.path.isdir(config.VECTOR_STORE_PATH)
 
 
-def main():
+def load_data():
 
     if check_vector_store_exists():
-        print("Vector Store already exists")
+        logger.info("Data already loaded")
         return 
     
-    file_urls = fetch_file_urls(repo_owner=REPO_OWNER, repo_name=REPO_NAME, directory_path=DIRECTORY_PATH)
+    logger.info("Data does not exist, loading data now...")
+    
+    file_urls = fetch_file_urls(repo_owner=config.REPO_OWNER, repo_name=config.REPO_NAME, directory_path=config.DIRECTORY_PATH)
     documents = load_documents(file_urls=file_urls)
     texts = split_documents(documents=documents)
     vector_store = run_embeddings_and_create_vector_store(texts=texts)
@@ -88,4 +90,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    load_data()

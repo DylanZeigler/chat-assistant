@@ -1,11 +1,14 @@
+import logging
 from assistant.models import GraphState
+
+logger = logging.getLogger(__name__)
 
 def route_document_search(
     state: GraphState,
 ):
-    print("CONDITIONAL EDGE: route_document_search")
+    logger.info("CONDITIONAL EDGE: route_document_search")
     
     if state["document_store_needed"]:
-        return "llm_rag"
+        return "get_documents_rag"
     else:
-        return "llm_web"
+        return "get_documents_web"

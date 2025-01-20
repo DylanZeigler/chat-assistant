@@ -1,13 +1,22 @@
 from typing_extensions import TypedDict
 from pydantic import BaseModel, Field
 
+
+class ContextDocument(BaseModel):
+    content: str 
+    link: str
+    title: str
+    source: str
+
+
 class GraphState(TypedDict):
-    rag_documents: list[str]
+    context_documents: list[ContextDocument]
     response: str
     chat_history: list[str]
     query: str
-    web_sources: list[str]
+    sources: list[str]
     document_store_needed: bool
+    intro_message: str
 
 
 class DetermineDocumentStore(BaseModel):
@@ -17,3 +26,22 @@ class DetermineDocumentStore(BaseModel):
         "to False."
         )
     )
+
+class Answer(BaseModel):
+    chat_response: str = Field(description=(
+        "Response you will give to answer the question from the user. This response should use the provided context documents to "
+        "provide an accurate answer."
+        )
+    )
+    intro_message: str = Field(description=(
+        "Short phrase indicating which context source was used to provide the response. Sources are either 'DuploCloud documents' "
+        "or 'Web search'"
+        ),
+        examples=[
+            "Here is what I found from the DuploCloud Documents", 
+            "Here is what I found from the web",
+            "From the DuploCloud Documents", 
+            "Searching the web says"
+        ]
+    )
+
