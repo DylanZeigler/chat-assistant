@@ -25,8 +25,8 @@ class AppConfig(BaseSettings):
     API_TITLE: str = "Dylan Zeigler's Chat AI"
     API_VERSION: str = "v0.1.0"
     API_DESCRIPTION: str = (
-        "API that exposes a chat completion endpoint to respond to users questions. The chat AI either uses a vector store or the web "
-        "to answer the users questions."
+        "API that exposes a chat endpoint to respond to users questions. The chat AI either uses a vector store to answer questions about "
+        "DuploCloud or uses the web to answer generic questions."
     )
 
     model_config = SettingsConfigDict(
