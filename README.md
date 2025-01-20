@@ -5,6 +5,9 @@ This is a chat assistant that answers questions for both DuploCloud specific or 
 ## Documentation
 API documentation is provided with swagger and can be viewed when running the application.
 
+## Requirements
+An OpenAI API key is required to run this application. Follow [this guide](https://platform.openai.com/docs/quickstart) for creating an OpenAI API key. One thing I noticed is that a credit card and at least $5 USD needs to be added to the OpenAI account when setting up the API key. Not adding a credit card severly rate limits the API key where this application **will not work**.
+
 ## How to Run
 First start by adding 2 environment variables to a .env file at the top level of the project. Use the .env_example as a template if needed. Ensure the follow environment variables are set,
 
